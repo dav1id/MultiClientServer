@@ -16,14 +16,19 @@ public class server {
     private static ExecutorService pool;
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(9090);
+        ServerSocket serverSocket = null;
         pool = Executors.newFixedThreadPool(4);
+        try {
+            serverSocket = new ServerSocket(9090);
+            while (true){
+                Socket socket = serverSocket.accept();
+                ClientHandler client = new ClientHandler(socket);
 
-        while (true) {
-            Socket socket = serverSocket.accept();
-            clientHandler client = new clientHandler(socket);
-            pool.execute(client);
-
+                pool.execute(client);
+                // Need a way to close this
+            }
+        } catch (IOException e){
+            if (serverSocket != null) serverSocket.close();
         }
     }
 }
