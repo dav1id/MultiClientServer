@@ -19,9 +19,15 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
     private Socket socket;
+    public Boolean clientHandlerClosed = true;
 
+    
     public ClientHandler(Socket socket){
         this.socket = socket;
+    }
+
+    public Boolean getClientHandlerStatus(){
+        return clientHandlerClosed; // True if open, false if closed
     }
 
     public void run(){
@@ -32,15 +38,27 @@ public class ClientHandler implements Runnable {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream());
 
-            String line;
-            while ((line = in.readLine()).compareTo("close") == 0){
-                if (line.compareTo("Hello, Server!") == 0){
-                    out.println("Hello, Client!");
+            String line = in.readLine();
+            System.out.println(line);
+
+            /*
+            while (true) {
+                if ((line = in.readLine()) != null){
+                    System.out.println("Client Says: " + line);
+
+                    if (line.equals("close")){
+                        clientHandlerClosed = false;
+                        out.println("Socket closed");
+                        break;
+
+                    } if (line.equals("Hello server")) out.println("Hello, Client!");
+                } else{
+                    System.out.println("System is null");
                 }
-            }
+            } */
+
         } catch (IOException e){
             throw new RuntimeException(e);
-            //Also return the output on the clients side to be the error message
         } finally {
             try {
                 if (in != null) in.close();
