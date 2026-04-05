@@ -1,0 +1,26 @@
+I'm planning to simulate message interactions from one client to another client, passing through the server that
+is going to act like a mini-router.
+
+    1. Need a way to send the message to the server and the server sends it to the appropiate client.
+        a. Create a unique type as class that is transmitted through the network called a Packet
+
+        b. Create the class PacketReceiver to decode the packet and save some of the information of the information sender.
+        The packet receiver is going to be a thread that is always going to be running and waiting for a packet to be sent
+        to the client. Once a packet is sent to the client it is going to create another thread (that will likely be a
+        lambda-thread that will handle the input and give it to the user). This lambda-thread has to be completed before
+        the PacketReceiver receives more input, so need a unique buffer to save incoming packets.
+
+        c. Client user input methods -> Client user input methods are also going to be another short-living thread
+        (so probably lambda thread) that waits for the user input, creates a packet, and sends it to the PacketTransceiver.
+
+
+        d. PacketTransceiver will create a short-living thread to send the packet to the server, and then the server
+        eventually redirects it to the right client. (The right client will be listed in the packet)
+
+
+    2. Need some 'routing' protocol so that the server does not get overwhelmed. Will do this when I learn more about routing
+    protocols
+
+    3. Need a GUI that is going to simulate these interactions visually. So the user can select which client they
+    want to send their information to by some selection of clients, then type it and send it. And wait in their own
+    chat screen to receive chats
