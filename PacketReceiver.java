@@ -33,8 +33,10 @@ public class PacketReceiver implements Runnable {
 
                         if (concat[0].equals("server")){
                             if ((packetTransceiver.messageFunc(message, "setServerMessage"))){
-                                System.out.println(message);
+                                System.out.printf("Server message %s\n", message); //debug
                             }
+                        } else{
+                            System.out.println(message);
                         }
                     }
                 }

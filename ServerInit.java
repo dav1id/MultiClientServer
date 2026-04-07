@@ -1,85 +1,112 @@
 /*
-    Need a way to deal with messages going into the server by creating some kind of buffer.
-        1. Server can behave like the output and input link inside of a router possibly (?)
+    Server thread waits for a client to connect and creates a list of the clients that have connected, receives a message
+    and adds it to a message buffer. While it waits for a message it can remove clients, and then send a server message
+    to the clients of a change in the number of clients.
 
+    This first server thread is connected to three additional threads (this is going to be a inputthreadpool, specific class that extends threadpool) that are going to alternate messages between them.
+    i.e., if one thread is called then the second one is called and then finally the third one is called, and then it goes
+    back to the second (can make this an enumerator, and then call next()). Calling messageList.add() will call next on the
+    enumerator, the three threads will check the enum in their while true loop.
 
-    Server waits for input. If it receives input it's going to have to decode the message, and then notify
-    the specific client's receiver that a message is going to be sent.
+    A second thread that reads from the FIFO queue, decodes the message, and sends it to the proper client while adding
+    the client that sends it as a prefix.
 
-    I need a routing protocol and output buffer so that one of my threads isn't constantly congested. I'm going to create
-    three threads that will handle server Input. Each server input thread will notify the server of the state of their
-    buffer, and the server will redirect the message to the server thread that has the lowest number of messages
-    to process in their buffer.
+    I might need to create a unique serverQueue, just to show how I might be able to create a routing protocol to
+    handle messages depending on their priority (which would depend on the client, might randomise one client to be
+    priority1 and handle their messages before others in the queue)
 
-    I need the same routing protocol for the server output to the other clients.
-    Also need a way to send server messages from the serverOutput.
-
-    Server is going to save the client into a static hashmap. Each Client will literally be called CLientOne, ClientTwo,
-    etcetra.
-
-    The specific Server client is going to create three paths that a message can follow. Each path is going to notify
-    the server of how full its buffer is
+    For example:
+    Client sends: client3 hello how are you doing -> client3 is going to be the receiver, server knows this in the
+    message decode function. Server appends client(sender) as the prefix after the decoder.
 */
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.concurrent.TimeUnit;
 
-public class ServerInit {
 
-    // Server has to be sending information about the number of clients to each client that is connected
-    public ServerInit(){
-
-    }
-
-    public static void main(String[] args){
-
-        BufferedReader in = null;
-        try(ServerSocket serverSocket = new ServerSocket(8080);
-            Socket clientSocket = serverSocket.accept();
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)
-        ){
-
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-
-            try {
-                while (!(in.ready())) {
-                    TimeUnit.SECONDS.sleep(3);
-                    System.out.println("Waiting to receive input from client....");
-
-                }
-            } catch(InterruptedException e){
-                System.out.println(e.getMessage());
-            }
-            String message = in.readLine();
-
-
-            // Testing out the PacketTransceiver:
-            System.out.println("Testing Packet Transceiver: ");
-            System.out.println(message);
-
-            // Testing out the PacketReceiver:
-            System.out.println("Testing Packet Receiver: ");
-            out.println("Hello, Client!");
-
-
-        } catch(IOException e){
-            System.out.println(e.getMessage());
+enum ThreadNum{
+    ThreadOne{
+        public ThreadNum next(){
+            return ThreadNum.ThreadTwo;
         }
-    }
-
-    /**
-     Message that's sent from the PacketTransceiver is going to have the format of
-     (user) (message)
-
-     Going to need to specify which user it's sending the message to
-
-     **/
-    public void decodeMessage(){
-
+    },
+    ThreadTwo{
+        public ThreadNum next(){
+            return ThreadNum.ThreadThree;
+        }
+    },
+    ThreadThree{
+        public ThreadNum next(){
+            return ThreadNum.ThreadOne;
+        }
     };
 
+    public abstract ThreadNum next();
+}
+
+
+public class ServerInit {
+    private Deque<String> messageQueue;
+    private boolean status;
+
+    public void decodeMessage(){
+
+    }
+
+    public void InputThread(){ //One thread that acts as input
+
+    }
+
+    public void setStatus(Boolean bool){
+        status = bool;
+    }
+
+
+    public void run(){
+        ArrayList<Socket> clientsList = new ArrayList<>();
+        status = false;
+
+        try{ // the client here has to be final, need a thread pool and worker threads for input and output (2 for input, 2 for output) aka this wont work
+            ServerSocket serverSocket = new ServerSocket(8080);
+            Socket client = serverSocket.accept();
+
+            Thread inputThread = new Thread(() -> {
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+
+                    while (!(status)) { // have to create a second try and catch inside of a while loop?
+                        String message;
+                        if (in.ready()) {
+                            if ((message = in.readLine()) != null)
+                                messageQueue.add(message);
+                        }
+                    }
+                } catch (IOException e){
+                    System.out.println(e.getMessage());
+                }
+            });
+            inputThread.start();
+
+            while(true){
+                client = serverSocket.accept();
+                System.out.println("Client connected to the server... ");
+                clientsList.add(client);
+
+
+                // Need to learn about thread pools here...
+            }
+        } catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+
+    }
 }

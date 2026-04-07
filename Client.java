@@ -2,11 +2,6 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class Client {
-    /**
-     Initialise the client and make it connect to the server, create a thread for writing user response, and continue
-     waiting for server response
-     **/
-
     public PacketTransceiver packetTransceiver;
     public PacketReceiver packetReceiver;
 
@@ -29,9 +24,6 @@ public class Client {
         String[] args = new String[3];
 
         try(Socket socket = new Socket(serverAddress, portNumber)){
-
-            // Defining an object that is going to allow me to use the wait(). Wait() requires synchronized to only allow one thread to use the wait on another thread
-
             this.packetTransceiver = new PacketTransceiver(packetReceiver, socket, args);
             Thread packetTransceiverThread = new Thread(packetTransceiver);
             packetTransceiverThread.start();
@@ -49,7 +41,7 @@ public class Client {
                 System.out.println(e.getMessage());
             }
 
-            System.out.println("Closing out of this client");
+            System.out.println("Closing out of this client...");
 
 
         } catch (IOException e){
