@@ -65,6 +65,8 @@ public class Server {
                 client = serverSocket.accept();
                 blockingQueues.put(("Client" + blockingQueues.size()), new LinkedBlockingQueue<>());
 
+                server.sendMessage("ClientsList"); //Need a way for the server to send the number of clients to packet receiver
+
                 InputStream inputStream = client.getInputStream();
                 OutputStream outputStream = client.getOutputStream();
 

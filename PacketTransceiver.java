@@ -57,7 +57,7 @@ public class PacketTransceiver implements Runnable {
      **/
     public synchronized boolean messageFunc(String message, String command){
         if (command.equals("setServerMessage")){
-            return setServerMessage(message);
+            return setServerMessage(message); // Finish message func
         } else{
             return checkMessage(message);
         }
@@ -114,27 +114,11 @@ public class PacketTransceiver implements Runnable {
      2. Input in terms of a server message.
      **/
     public void run(){
+        status = true;
         try(
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 Scanner scanner = new Scanner(System.in)
         ){
-
-            Thread inputThread = new Thread(() -> {
-                String message;
-
-                while (!(message = scanner.nextLine()).equals("close")) {
-                    synchronized(this) {
-                        if (checkMessage(message)) {
-                            out.println(message);
-                        } else {
-                            System.out.println("Message cannot be sent to someone who is offline");
-                        }
-                    }
-                }
-
-                packetReceiver.setStatus(false);
-            });
-            inputThread.start();
 
             while (status){
                 String message;
@@ -143,10 +127,13 @@ public class PacketTransceiver implements Runnable {
                         synchronized(this) {
                             if (checkMessage(message)) {
                                 out.println(message);
+                            } else{
+                                System.out.println("Message cannot be sent to someone who is offline");
                             }
                         }
                     } else {
-                       System.out.println("");
+                       status = false;
+                       packetReceiver.setStatus(false);
                     }
                 }
             }
