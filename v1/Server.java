@@ -63,13 +63,10 @@ public class Server {
         }
     }
 
-    ;
-
-
     public void run() {
         ArrayList<Socket> clientsList = new ArrayList<>();
 
-        ExecutorService inputThreadPool = Executors.newFixedThreadPool(3);
+        ExecutorService inputThreadPool = Executors.newFixedThreadPool(3); //Going to probably have to change this to cachedThreadPool
         ExecutorService outputThreadPool = Executors.newFixedThreadPool(3);
 
         status = true;
@@ -90,7 +87,7 @@ public class Server {
                     ProducerInputThread(clientName, inputStream);
                 });
 
-                outputThreadPool.submit(() -> {
+                outputThreadPool.submit(() -> { // Submit a task
                     ConsumerOutputThread(outputStream, ("Client" + blockingQueues.size()));
                 });
 
