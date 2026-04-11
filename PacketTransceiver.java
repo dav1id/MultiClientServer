@@ -104,17 +104,6 @@ public class PacketTransceiver implements Runnable {
     }
 
 
-    public synchronized void queueFunctions(String message, String function){
-        switch(function){
-            case "add":
-                messageQueue.add(message);
-            case "remove":
-                messageQueue.remove();
-                break;
-            default:
-                break;
-        }
-    }
 
     /**
      Waits for the thread to receive input from the server. Can receive input as:
@@ -136,7 +125,7 @@ public class PacketTransceiver implements Runnable {
                 while (!(message = scanner.nextLine()).equals("close")) {
                     synchronized(this) {
                         if (checkMessage(message)) {
-                            queueFunctions(message, "add");
+                            out.println(message);
                         } else {
                             System.out.println("Message cannot be sent to someone who is offline");
                         }
@@ -147,18 +136,17 @@ public class PacketTransceiver implements Runnable {
             });
             inputThread.start();
 
-            while (true){
+            while (status){
                 String message;
-                if ((message = messageQueue.peek()) != null){
-                    if (message.equals("close")) break;
-
-                    if (checkMessage(message)){
-                        out.println(message);
+                while((message = scanner.nextLine()) != null){
+                    if (!(message.equals("close"))){
                         synchronized(this) {
-                            queueFunctions(message, "remove");
+                            if (checkMessage(message)) {
+                                out.println(message);
+                            }
                         }
                     } else {
-                        System.out.println("This message cannot be sent because this client does not exist"); // Will be handled by back-end once the GUI is running
+                       System.out.println("");
                     }
                 }
             }

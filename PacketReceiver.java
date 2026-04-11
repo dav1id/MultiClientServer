@@ -21,7 +21,9 @@ public class PacketReceiver implements Runnable {
 
         messageQueue = new ArrayDeque<>();
     }
-
+    /**
+        server-setServerMessage
+     **/
     public void run(){
         try(BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
             Thread inputFilter = new Thread(() -> {

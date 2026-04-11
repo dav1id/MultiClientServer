@@ -28,9 +28,9 @@ public class Client {
             Thread packetTransceiverThread = new Thread(packetTransceiver);
             packetTransceiverThread.start();
 
-            this.packetReceiver = new PacketReceiver(this.packetTransceiver, socket);
-            Thread packetReceiverThread = new Thread(packetReceiver);
-            packetReceiverThread.start();
+            //this.packetReceiver = new PacketReceiver(this.packetTransceiver, socket);
+            //Thread packetReceiverThread = new Thread(packetReceiver);
+            //packetReceiverThread.start();
 
             try {
                 synchronized (lock){
