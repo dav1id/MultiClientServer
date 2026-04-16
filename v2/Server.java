@@ -25,6 +25,10 @@ public class Server implements Runnable {
     private boolean status;
     public int clientCounter;
 
+    /**
+        Receives user message, and forwards it to the appropiate client by creating a new specific task that omits
+        iterating over the selectionKeys, called producerTaskWithoutIteration.
+     **/
     public boolean consumerTask(Set<SelectionKey>  selectionKeys, SelectionKey sender, ExecutorService consumerThreadPool) {
         ByteBuffer buffer = ByteBuffer.allocate(1024);
 
@@ -39,7 +43,7 @@ public class Server implements Runnable {
             } while(result != -1);
 
             String message = new String(buffer.array(), 0, buffer.limit());
-            String[] messageArray = message.split(" ");
+            String[] messageArray = message.split(" ", 1);
 
             for(SelectionKey receiver : selectionKeys){
                 ClientMeta clientMeta = (ClientMeta) receiver.attachment();
@@ -48,14 +52,12 @@ public class Server implements Runnable {
 
                     consumerThreadPool.submit(
                             () -> {
-                                producerTaskWithoutIteration(sender, receiver);
+                                unicastProducerTask(sender, receiver, messageArray[1]); // add condition to check if message can be divided to 1 and 2  -> client2 hello how are you
                             }
                     );
-
                     return true;
                 }
             }
-
 
         } catch(IOException e){
             System.out.println(e.getMessage());
@@ -64,13 +66,56 @@ public class Server implements Runnable {
         return false;
     }
 
-    public void producerTaskWithoutIteration(SelectionKey senderKey, SelectionKey receiverKey){
+    public boolean unicastProducerTask(SelectionKey senderKey, SelectionKey receiverKey, String message){
+        /*
+         A specific thread will both share the same ByteBuffer when I make threadLocal. For now, .flip() and .clear() might seem useless.
+         I was thinking of making it reference the ByteBuffer but I want it compartamentalised
+        */
+        if (!(receiverKey.isWritable())) return false;
+
+
+        ClientMeta senderMeta = (ClientMeta) senderKey.attachment();
+        ClientMeta receiverMeta = (ClientMeta) receiverKey.attachment();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+
+        try(SocketChannel receiver = (SocketChannel) receiverKey.channel()){
+            String formattedMessage = String.format("%s: %s", senderMeta.getClientName(), message);
+            byte[] buffer = formattedMessage.getBytes();
+
+            byteBuffer.put(buffer);
+            byteBuffer.flip();
+
+            while(byteBuffer.hasRemaining()){
+                receiver.write(byteBuffer);
+            }
+
+            //DEBUG
+            String debug = String.format("Finished printing %s.... to %s", message, receiverMeta.getClientName());
+            System.out.println(debug);
+
+        } catch(IOException e){
+            String errMessage = String.format("Error trying to send information from %s to %s", senderMeta.getClientName(), receiverMeta.getClientName());
+            System.out.println(errMessage);
+        }
+
+        return true;
     }
 
+    /*
+        Future way to simulate broadcast from client to all, and from server to all. Server to all can be a way to change
+        some aspects of the visual interface when I start using JavaFX.
+    */
 
-    public boolean producerTask(Set<SelectionKey> selectionKeys, SelectionKey producer){
-        ByteBuffer buffer = ByteBuffer.allocate(1024); // Need to understand ThreadLocals to know where to go next with this
+    public boolean broadcastProducerTask(Set<SelectionKey> selectionKeys, SelectionKey sender, String broadcastMessage){
         return true;
+    }
+
+    /*
+        Future way to simulate sending messages to multiple clients from one client. Will probably happen after
+        I create the group chat using JavaFX
+    */
+    public boolean multicastProducerTask(){
+        return false;
     }
 
     public void run(){
@@ -109,11 +154,6 @@ public class Server implements Runnable {
                     } else if (selectKey.isReadable()){
                         consumerThreadPool.submit( () -> {
                             consumerTask(selectionKeySet, selectKey, consumerThreadPool);
-                            // Space for some future backlog
-                        });
-                    } else if (selectKey.isWritable()){
-                        producerThreadPool.submit( () -> {
-                            producerTask(selectionKeySet, selectKey);
                             // Space for some future backlog
                         });
                     }
