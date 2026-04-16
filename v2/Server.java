@@ -29,7 +29,7 @@ public class Server implements Runnable {
         Receives user message, and forwards it to the appropiate client by creating a new specific task that omits
         iterating over the selectionKeys, called producerTaskWithoutIteration.
      **/
-    public boolean consumerTask(Set<SelectionKey>  selectionKeys, SelectionKey sender, ExecutorService consumerThreadPool) {
+    public boolean consumerTask(Set<SelectionKey>  selectionKeys, SelectionKey sender, ExecutorService producerThreadPool) {
         ByteBuffer buffer = ByteBuffer.allocate(1024);
 
         try(SocketChannel client = (SocketChannel) sender.channel()){
@@ -50,7 +50,7 @@ public class Server implements Runnable {
 
                 if (clientMeta.getClientName().equals(messageArray[0])){
 
-                    consumerThreadPool.submit(
+                    producerThreadPool.submit(
                             () -> {
                                 unicastProducerTask(sender, receiver, messageArray[1]); // add condition to check if message can be divided to 1 and 2  -> client2 hello how are you
                             }
@@ -77,6 +77,8 @@ public class Server implements Runnable {
         ClientMeta senderMeta = (ClientMeta) senderKey.attachment();
         ClientMeta receiverMeta = (ClientMeta) receiverKey.attachment();
         ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+
+        clientCounter = 0;
 
         try(SocketChannel receiver = (SocketChannel) receiverKey.channel()){
             String formattedMessage = String.format("%s: %s", senderMeta.getClientName(), message);
@@ -153,7 +155,7 @@ public class Server implements Runnable {
                         // Accept a new socket channel connection here
                     } else if (selectKey.isReadable()){
                         consumerThreadPool.submit( () -> {
-                            consumerTask(selectionKeySet, selectKey, consumerThreadPool);
+                            consumerTask(selectionKeySet, selectKey, producerThreadPool);
                             // Space for some future backlog
                         });
                     }
