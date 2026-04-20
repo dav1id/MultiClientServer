@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server implements Runnable { // way to identify if a channel has disconnected
-    private boolean status;
     private int clientCounter = 0;
 
     private final ArrayList<SelectionKey> registeredSelectionKeys = new ArrayList<>();
@@ -75,9 +74,11 @@ public class Server implements Runnable { // way to identify if a channel has di
                 receiver.write(byteBuffer);
             }
 
+            byteBuffer.clear();
+
             //DEBUG
             String debug = String.format("Finished printing %s.... to %s %n", message, receiverMeta.getClientName());
-            System.out.println(debug);
+          //  System.out.println(debug);
 
         } catch(IOException e){
             // Need a specific exception here to write to the sender that the receiver does not exist. But a try and catch is expensive
@@ -112,6 +113,7 @@ public class Server implements Runnable { // way to identify if a channel has di
         @param key Reference to the selection key that is going to be closed
      **/
     public void closeLocalChannel(SelectionKey key){
+        // Need to incorporate exiting out of client without using this close and still running this:
         SocketChannel channel = (SocketChannel) key.channel();
 
         try {
@@ -129,7 +131,6 @@ public class Server implements Runnable { // way to identify if a channel has di
     }
 
     public void run(){
-        status = true;
         try(
                 ExecutorService producerThreadPool = Executors.newFixedThreadPool(3);
                 ExecutorService consumerThreadPool = Executors.newFixedThreadPool(3);
