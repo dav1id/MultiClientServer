@@ -1,0 +1,66 @@
+.root{
+    -fx-background-color: transparent;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-padding: 0;
+}
+
+.anchor-pane {
+    -fx-background-color: rgba(87, 39, 245, 0.12);
+    -fx-background-radius: 30;
+    -fx-padding: 10 16 10 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0.2, 0, 4);
+}
+
+#MessageSend{
+    -fx-background-color: rgba(87, 39, 245, 0.45);
+    -fx-background-radius: 30;
+    -fx-padding: 10 16 10 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0.2, 0, 4);
+    -fx-background-color: transparent;
+}
+
+#MessageHistory{
+     -fx-background-color: rgba(173, 173, 173, 0.45);
+     -fx-background-radius: 30;
+     -fx-padding: 10 16 10 16;
+     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0.2, 0, 4);
+}
+
+#MessageHistoryTextArea{
+     -fx-control-inner-background: transparent;
+     -fx-background-color: transparent;
+     -fx-background-insets: 0;
+}
+
+#MessageHistoryTextArea .content {
+    -fx-background-color: transparent;
+}
+
+#MessageHistoryTextArea .viewport {
+    -fx-background-color: transparent;
+}
+
+#MessageChat{
+    -fx-background-color: rgba(173, 173, 173, 0.25);
+    -fx-background-radius: 30;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0.2, 0, 4);
+}
+
+#ClientList{
+    -fx-background-color: rgba(173, 173, 173, 0.45);
+    -fx-background-radius: 30;
+    -fx-padding: 10 16 10 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0.2, 0, 4);
+}

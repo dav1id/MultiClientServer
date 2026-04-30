@@ -1,12 +1,39 @@
-package v2;
+package main;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client implements Runnable {
+    private final ArrayList<String> clientsList = new ArrayList<>();
+
+    public enum Interaction{
+        verify,
+        set,
+        remove
+    }
+
+    private synchronized void interactClientsList(Interaction request, String name){
+        switch(request){
+            case verify:
+                break;
+
+            case set:
+                break;
+
+            case remove:
+                break;
+        }
+
+    }
+
+    /*
+        Need to create a temporary thread here? Look into it and the cost. It needs to set or remove depending on the
+        serverMessage that was sent to remove/add
+   */
     public final void clientReceiver(SocketChannel channel){
         ByteBuffer readBuffer = ByteBuffer.allocate(1024);
 
@@ -34,7 +61,7 @@ public class Client implements Runnable {
     public final void clientSender(SocketChannel channel){
         ByteBuffer writeBuffer = ByteBuffer.allocate(1024);
 
-        try(Scanner in = new Scanner(System.in)){ // Way to make System.in not print what I'm saying exactly for more cinematic effect...
+        try(Scanner in = new Scanner(System.in)){
             while(channel.isConnected()) {
                 String message;
                 if (in.hasNext() && (message = in.nextLine()) != null) {
@@ -45,15 +72,11 @@ public class Client implements Runnable {
 
                     //System.out.printf("Me -> %s: %s %n", messageArray[0], messageArray[1]);
 
-                    if ((messageArray.length >= 2)) {
+                    if ((messageArray.length >= 2) && clientsList.contains(messageArray[1])) {
                         byte[] messageBytes = message.getBytes();
 
                         writeBuffer.put(messageBytes);
                         writeBuffer.flip();
-
-                        //DEBUG START
-                      //  System.out.printf("Sent the message: %s...%n", message);
-                        //DEBUG END
 
                         while (writeBuffer.hasRemaining())
                             channel.write(writeBuffer);
@@ -72,10 +95,12 @@ public class Client implements Runnable {
 
     public void run(){
         try(final SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress(8080))){
-            Thread clientThread = new Thread( () -> clientReceiver(socketChannel));
-            clientThread.start();
+            Thread receiverThread = new Thread( () -> clientReceiver(socketChannel));
+            receiverThread.start();
 
-            clientSender(socketChannel);
+            Thread senderThread = new Thread( () -> clientSender(socketChannel));
+            senderThread.start();
+
 
         } catch(IOException e){
             System.out.println(e.getMessage());

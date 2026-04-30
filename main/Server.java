@@ -1,4 +1,4 @@
-package v2;
+package main;
 
 /*
    First-Level: Loops through a list of selectionKeys, identifies the server selection channel and checks if a client
@@ -9,6 +9,7 @@ package v2;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -24,6 +25,7 @@ import java.util.concurrent.Executors;
 
 public class Server implements Runnable {
     private final ArrayList<SelectionKey> registeredSelectionKeys = new ArrayList<>();
+    private final ArrayList<String> registeredChannelNames = new ArrayList<>();
 
     private final int allocatedBytes;
     private final int numThreads;
@@ -44,7 +46,7 @@ public class Server implements Runnable {
     /**
         Sends a message to the correct receiver by calling  producerTaskWithoutIteration once it's found the client.
      **/
-    public void consumerTask(byte[] messageBytes, SelectionKey senderKey, ExecutorService producerThreadPool) {
+    public void clientConsumerTask(byte[] messageBytes, SelectionKey senderKey, ExecutorService producerThreadPool) {
         String message = new String(messageBytes);
         String[] messageArray = message.split(" ", 2);
 
@@ -65,6 +67,24 @@ public class Server implements Runnable {
             }
         } else {
             closeLocalChannel(senderKey);
+        }
+    }
+
+
+    private enum ServerMessage{ // Adding as an enum for possible other commands that I want to be able to pro
+        serverCleanClients
+    }
+    public void serverConsumerTask(ExecutorService producerThreadPool, ServerMessage command){
+        String serverMessage;
+        switch(command){
+            case serverCleanClients:
+                serverMessage = registeredChannelNames.toString();
+
+                for (SelectionKey key : registeredSelectionKeys)
+                    producerThreadPool.submit( () -> unicastProducerTask("server", key, serverMessage));
+
+                break;
+
         }
     }
 
@@ -126,7 +146,10 @@ public class Server implements Runnable {
      **/
     public void closeLocalChannel(SelectionKey key){
         // Need to incorporate exiting out of client without using this close and still running this (Look into sys commands):
+
         SocketChannel channel = (SocketChannel) key.channel();
+        String clientName = ( (ClientMeta) key.attachment()).getClientName();
+        registeredChannelNames.remove(clientName);
 
         try {
             channel.close();
@@ -186,6 +209,9 @@ public class Server implements Runnable {
 
                             clientCounter++;
                             registeredSelectionKeys.add(clientKey);
+                            registeredChannelNames.add(meta.getClientName());
+                            consumerThreadPool.submit(() -> serverConsumerTask(ServerMessage.serverCleanClients));
+
                         } catch(IOException e){
                             System.out.println(e.getMessage());
                         }
@@ -218,7 +244,7 @@ public class Server implements Runnable {
                         byte[] messageBytes = new byte[byteBuffer.remaining()];
                         byteBuffer.get(messageBytes);
 
-                        consumerThreadPool.submit(() -> consumerTask(messageBytes, selectKey, producerThreadPool));
+                        consumerThreadPool.submit(() -> clientConsumerTask(messageBytes, selectKey, producerThreadPool));
                     }
                 }
             }

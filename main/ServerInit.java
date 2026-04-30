@@ -1,4 +1,4 @@
-package v2;
+package main;
 
 public class ServerInit {
     public static void main(String[] args){

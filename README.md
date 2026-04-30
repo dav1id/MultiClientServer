@@ -45,10 +45,7 @@ java ServerInit.java
 
 
 ## Future Improvements
-
-- Message persistence
-- Authentication
-- Private messaging
-- Horizontal scaling
-- Protocol abstraction (e.g., WebSocket)
+Right now I'm currently trying to use CSS, FXML, and JavaFX to create a visual interface
+for the user trying to run ClientInit.java. I plan to make a way to broadcast messages to
+other clients, and a way to change the type of protocol that is going to be sent to another user.
 
