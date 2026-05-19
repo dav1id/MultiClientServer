@@ -65,7 +65,6 @@ public class Client implements Runnable {
     private void clientSender(SocketChannel channel) {
         ByteBuffer writeBuffer = ByteBuffer.allocate(1024);
 
-        System.out.println("Sender operational?");
         while (channel.isConnected()) {
             String message = "";
             synchronized(messageLock){

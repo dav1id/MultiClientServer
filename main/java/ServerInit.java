@@ -1,7 +1,12 @@
 package main.java;
+import javafx.application.Application;
+import main.java.Client.Client;
 import main.java.Client.ClientApplication;
+import main.java.util.MessageLock;
 
 public class ServerInit {
+    private static final MessageLock messageLock = new MessageLock();
+
     public static void main(String[] args){
         new Thread(
                 () -> {
@@ -10,7 +15,9 @@ public class ServerInit {
                 }
         ).start();
 
-        ClientApplication dummyClient = new ClientApplication(args);
-        dummyClient.startClientChannel();
+        Application.launch(ClientApplication.class);
+
+        Client dummyClient = new Client();
+        dummyClient.setMessageLock(messageLock);
     }
 }

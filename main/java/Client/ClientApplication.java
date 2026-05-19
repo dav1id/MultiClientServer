@@ -16,18 +16,6 @@ import java.nio.channels.SocketChannel;
 public class ClientApplication extends Application {
     private static volatile MessageLock messageLock = new MessageLock();
 
-    // Client channel reference
-    private final Client client;
-
-    // Handles communication between back and front end
-    private Controller controller;
-
-    public ClientApplication(String[] args){
-        launch(args);
-
-        this.client = new Client();
-        client.setMessageLock(messageLock);
-    }
     public void configureStage(Parent root, Stage stage){
         String css = this.getClass().getResource("/resources/application.css").toExternalForm();
 
@@ -38,17 +26,6 @@ public class ClientApplication extends Application {
 
         stage.setScene(mainScene);
         stage.show();
-    }
-
-    public void startClientChannel(){
-        try{
-            while(messageLock == null)
-                Thread.sleep(1000);
-
-            client.run();
-        } catch(InterruptedException e){
-            System.out.println(e.getMessage());
-        }
     }
 
     public void start(Stage stage) throws Exception {
@@ -62,7 +39,8 @@ public class ClientApplication extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/layout.fxml"));
         Parent root = loader.load();
 
-        this.controller = loader.getController();
+        // Handles communication between back and front end
+        Controller controller = loader.getController();
         controller.setMessageLock(messageLock);
 
         configureStage(root, stage);
