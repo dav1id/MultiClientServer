@@ -1,4 +1,5 @@
 package main.java;
+import main.java.Client.ClientApplication;
 
 public class ServerInit {
     public static void main(String[] args){
@@ -9,9 +10,7 @@ public class ServerInit {
                 }
         ).start();
 
-        // DEBUG START
-        Client dummyClient = new Client();
-        dummyClient.run();
-        //DEBUG END
+        ClientApplication dummyClient = new ClientApplication(args);
+        dummyClient.startClientChannel();
     }
 }

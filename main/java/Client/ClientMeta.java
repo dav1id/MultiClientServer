@@ -1,4 +1,4 @@
-package main.java;
+package main.java.Client;
 
 import java.net.SocketAddress;
 

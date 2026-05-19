@@ -3,7 +3,7 @@ package main.Visuals;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import main.java.MessageLock;
+import main.java.util.MessageLock;
 
 /**
  Handles user clicks, and redirects input to the application, which redirects input to the Client

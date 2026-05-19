@@ -6,6 +6,8 @@ package main.java;
    and submits it to a ThreadPool as a ConsumerTask (reading) and a ProducerTask (writing).
 */
 
+import main.java.Client.ClientMeta;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 

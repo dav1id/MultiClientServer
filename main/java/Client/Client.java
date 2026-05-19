@@ -1,4 +1,6 @@
-package main.java;
+package main.java.Client;
+
+import main.java.util.MessageLock;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
