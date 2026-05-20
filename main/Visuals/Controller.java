@@ -21,13 +21,18 @@ public class Controller {
     public void setMessageLock(MessageLock messageLock){
         this.messageLock = messageLock;
     }
+
     @FXML
     public void initialize(){
         MessageSend.setOnAction(e -> {
             System.out.println("This button has been called!");
             String message = MessageChat.getText();
 
-            messageLock.notify();
+            synchronized(messageLock){ // turn this into a worker/virtual thread
+                messageLock.notify();
+                messageLock.getMessage();
+            }
+
             System.out.println(message);
         });
     }

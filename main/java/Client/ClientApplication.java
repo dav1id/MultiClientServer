@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public class ClientApplication extends Application {
-    private static volatile MessageLock messageLock = new MessageLock();
+    private static Controller controller;
 
     public void configureStage(Parent root, Stage stage){
         String css = this.getClass().getResource("/resources/application.css").toExternalForm();
@@ -28,6 +28,11 @@ public class ClientApplication extends Application {
         stage.show();
     }
 
+    public static Controller getController(){
+        return controller;
+    }
+
+
     public void start(Stage stage) throws Exception {
         try(SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress(8080))){
             ByteBuffer buff = ByteBuffer.allocate(16);
@@ -39,9 +44,7 @@ public class ClientApplication extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/layout.fxml"));
         Parent root = loader.load();
 
-        // Handles communication between back and front end
-        Controller controller = loader.getController();
-        controller.setMessageLock(messageLock);
+        controller = loader.getController();
 
         configureStage(root, stage);
     }

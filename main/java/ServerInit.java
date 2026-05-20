@@ -1,5 +1,6 @@
 package main.java;
 import javafx.application.Application;
+import main.Visuals.Controller;
 import main.java.Client.Client;
 import main.java.Client.ClientApplication;
 import main.java.util.MessageLock;
@@ -17,7 +18,10 @@ public class ServerInit {
 
         Application.launch(ClientApplication.class);
 
-        Client dummyClient = new Client();
-        dummyClient.setMessageLock(messageLock);
+        Controller controller = ClientApplication.getController();
+        controller.setMessageLock(messageLock);
+
+        Client dummyClient = new Client(controller, messageLock);
+        dummyClient.run();
     }
 }

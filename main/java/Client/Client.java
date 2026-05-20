@@ -1,5 +1,6 @@
 package main.java.Client;
 
+import main.Visuals.Controller;
 import main.java.util.MessageLock;
 
 import java.io.IOException;
@@ -12,16 +13,26 @@ import java.util.Arrays;
 public class Client implements Runnable {
     private final ArrayList<String> clientsList = new ArrayList<>();
 
-    private final String receiverName = "receiver-thread";
-
-    //Controller
-    private MessageLock messageLock;
+    private Controller controller;
+    private final MessageLock messageLock;
 
     /**
      * The sender and receiver threads both call interactClientsList when it's trying to send a message. This makes sure that
      * both the sender and receiver are working with an updated clients list. The receiver will be the only one enabling
      * updateList to be true if the server sends it a message.
      **/
+
+    public Client(MessageLock messageLock){
+        this.controller = null;
+        this.messageLock = messageLock;
+    }
+
+    public Client(Controller controller, MessageLock messageLock){
+        this(messageLock);
+        this.controller = controller;
+    }
+
+
     private synchronized void interactClientsList(Boolean updateList, String message) {
         if (updateList) { // Assuming that the thing calling updateList is going to be the receiver parsing a server message
             String[] temp = message.split(",");
@@ -35,10 +46,9 @@ public class Client implements Runnable {
 
     private void clientReceiver(SocketChannel channel) {
         ByteBuffer readBuffer = ByteBuffer.allocate(1024);
-        String threadName = Thread.currentThread().getName();
 
         try {
-            while (true) {
+            while (channel.isConnected()) {
                 int result = channel.read(readBuffer);
                 if (result == -1) break;
 
@@ -64,18 +74,17 @@ public class Client implements Runnable {
 
     private void clientSender(SocketChannel channel) {
         ByteBuffer writeBuffer = ByteBuffer.allocate(1024);
+        String message;
 
         while (channel.isConnected()) {
-            String message = "";
             synchronized(messageLock){
                 try {
                     messageLock.wait();
-                    message = messageLock.getMessage();
-
                 } catch(InterruptedException e){
                     System.out.println(e.getMessage());
                 }
             }
+            message = messageLock.getMessage();
 
             try {
                 writeBuffer.clear();
@@ -108,14 +117,9 @@ public class Client implements Runnable {
         }
     }
 
-    public void setMessageLock(MessageLock messageLock){
-        this.messageLock = messageLock;
-    }
-
     public void run(){
         try(final SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress(8080))){
             Thread receiverThread = new Thread( () -> clientReceiver(socketChannel));
-            receiverThread.setName(receiverName);
             receiverThread.start();
 
             clientSender(socketChannel);
