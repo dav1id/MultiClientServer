@@ -1,5 +1,4 @@
 package main.java;
-import main.Visuals.Controller;
 import main.java.Client.Client;
 import main.java.Client.ClientApplication;
 import main.java.util.MessageLock;
@@ -10,12 +9,12 @@ public class ClientInit {
     private final static MessageLock messageLock = new MessageLock();
 
     public static void main(String[] args){
-        //Init
+        Thread clientThread = new Thread( () -> {
+            Client client = new Client(messageLock);
+            client.run();
+        }, "Client-Thread");
+
+        clientThread.start();
+
         launch(ClientApplication.class);
-
-        Controller controller = ClientApplication.getController();
-        controller.setMessageLock(messageLock);
-
-        Client client = new Client(ClientApplication.getController(), messageLock);
-        client.run();
     }}

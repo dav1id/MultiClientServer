@@ -3,7 +3,7 @@ package main.Visuals;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import main.java.util.MessageLock;
+import main.java.Client.ClientApplication;
 
 /**
  Handles user clicks, and redirects input to the application, which redirects input to the Client
@@ -16,10 +16,10 @@ public class Controller {
     @FXML
     TextField MessageChat;
 
-    private MessageLock messageLock;
+    ClientApplication application;
 
-    public void setMessageLock(MessageLock messageLock){
-        this.messageLock = messageLock;
+    public void setApplication(ClientApplication application){
+        this.application = application;
     }
 
     @FXML
@@ -28,11 +28,7 @@ public class Controller {
             System.out.println("This button has been called!");
             String message = MessageChat.getText();
 
-            synchronized(messageLock){ // turn this into a worker/virtual thread
-                messageLock.notify();
-                messageLock.getMessage();
-            }
-
+            application.messageRequest(message);
             System.out.println(message);
         });
     }

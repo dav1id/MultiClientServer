@@ -24,7 +24,7 @@ public class Client implements Runnable {
 
     public Client(MessageLock messageLock){
         this.controller = null;
-        this.messageLock = messageLock;
+        this.messageLock = ClientApplication.getMessageLock();
     }
 
     public Client(Controller controller, MessageLock messageLock){
@@ -119,6 +119,7 @@ public class Client implements Runnable {
 
     public void run(){
         try(final SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress(8080))){
+            System.out.println("Debug Start...");
             Thread receiverThread = new Thread( () -> clientReceiver(socketChannel));
             receiverThread.start();
 

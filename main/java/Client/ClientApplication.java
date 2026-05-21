@@ -14,7 +14,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public class ClientApplication extends Application {
-    private static Controller controller;
+    private static final MessageLock messageLock = new MessageLock();
+    private Controller controller;
+
+    public void messageRequest(String message){
+        synchronized (messageLock){
+            messageLock.notify();
+        }
+    }
+
+    // Client calls this function to get the message once it has been notified of a message arriving
+    public static String getMessageRequest(String message){
+        return message;
+    }
 
     public void configureStage(Parent root, Stage stage){
         String css = this.getClass().getResource("/resources/application.css").toExternalForm();
@@ -28,10 +40,9 @@ public class ClientApplication extends Application {
         stage.show();
     }
 
-    public static Controller getController(){
-        return controller;
+    public static MessageLock getMessageLock(){
+        return messageLock;
     }
-
 
     public void start(Stage stage) throws Exception {
         try(SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress(8080))){
@@ -45,6 +56,7 @@ public class ClientApplication extends Application {
         Parent root = loader.load();
 
         controller = loader.getController();
+        controller.setApplication(this);
 
         configureStage(root, stage);
     }
